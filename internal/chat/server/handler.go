@@ -10,7 +10,7 @@ import (
 type ChatHandler struct {
 }
 
-func (handler *ChatHandler) HandleSocketConnection(ws *websocket.Conn, r *http.Request, readTimeout int, writeTimeout int) error {
+func (handler *ChatHandler) HandleSocketConnection(ws *websocket.Conn, _ *http.Request, _ int, _ int) error {
 	go utils.RunWithRecovery(func() {
 		handler.readWsMessage(ws)
 	})
