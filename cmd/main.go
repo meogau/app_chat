@@ -9,7 +9,7 @@ func main() {
 	chatHandler := &server.ChatHandler{}
 	chatServer := socket_server.Server{
 		Port:            8888,
-		Name:            "chat server",
+		Name:            "Chat",
 		ReadTimeOut:     1000,
 		WriteTimeOut:    1000,
 		MaxMessageSize:  1000,
