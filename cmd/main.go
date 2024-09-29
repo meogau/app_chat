@@ -3,12 +3,18 @@ package main
 import (
 	"app_chat/internal/chat/server"
 	"app_chat/internal/socket_server"
+	"app_chat/pkg/model/socket"
+	"github.com/gorilla/websocket"
 )
 
 func main() {
-	chatHandler := &server.ChatHandler{}
+	srv := socket.NewServer()
+	chatHandler := &server.ChatHandler{
+		Upgrade: websocket.Upgrader{},
+		Server:  srv,
+	}
 	chatServer := socket_server.Server{
-		Port:            8888,
+		Port:            8989,
 		Name:            "Chat",
 		ReadTimeOut:     1000,
 		WriteTimeOut:    1000,

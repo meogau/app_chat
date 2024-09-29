@@ -24,7 +24,6 @@ type Server struct {
 }
 
 func (s *Server) Start() error {
-	// TEST WS
 	r := mux.NewRouter()
 	r.HandleFunc("/healthcheck/_check", handleHealthCheck).Methods("GET")
 	r.PathPrefix("/").HandlerFunc(s.serveWebSocket)
