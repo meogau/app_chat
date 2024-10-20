@@ -1,6 +1,7 @@
 package server
 
 import (
+	"app_chat/internal/chat/memory"
 	"app_chat/pkg/model/socket"
 	"app_chat/pkg/utils"
 	"github.com/gorilla/websocket"
@@ -9,29 +10,33 @@ import (
 )
 
 type ChatHandler struct {
-	Upgrade websocket.Upgrader
-	Server  *socket.Server
+	Upgrade  websocket.Upgrader
+	InMemory memory.InMemory
 }
 
 func (handler *ChatHandler) HandleSocketConnection(ws *websocket.Conn, _ *http.Request, _ int, _ int) error {
+	// todo: create user
+	user := &socket.User{
+		Username: "",
+		Conn:     ws,
+	}
 	go utils.RunWithRecovery(func() {
-		handler.readWsMessage(ws)
+		handler.readWsMessage(user)
 	})
 	return nil
 }
 
-func (handler *ChatHandler) readWsMessage(ws *websocket.Conn) {
-	srv := handler.Server
+func (handler *ChatHandler) readWsMessage(user *socket.User) {
 	defer func(ws *websocket.Conn) {
 		err := ws.Close()
 		if err != nil {
 
 		}
-	}(ws)
+	}(user.Conn)
 
 	var message map[string]interface{}
 	for {
-		if err := ws.ReadJSON(&message); err != nil {
+		if err := user.Conn.ReadJSON(&message); err != nil {
 			log.Println("Error reading json:", err)
 			break
 		}
@@ -42,9 +47,13 @@ func (handler *ChatHandler) readWsMessage(ws *websocket.Conn) {
 			switch action {
 			case "login":
 				username := data["username"].(string)
-				srv.Clients[username] = &socket.User{Username: username, Conn: ws}
+				// todo: check user name
+				user := &socket.User{
+					Username: username,
+					Conn:     ws,
+				}
+				handler.InMemory.AddUSer(user)
 				log.Printf("User %s logged in", username)
-
 				response := map[string]interface{}{
 					"action": "login",
 					"status": "success",
@@ -52,7 +61,10 @@ func (handler *ChatHandler) readWsMessage(ws *websocket.Conn) {
 						"message": "Login successful!",
 					},
 				}
-				err := ws.WriteJSON(response)
+
+				// todo: use send function
+				err := user.SendMessage(response)
+				//err := ws.WriteJSON(response)
 				if err != nil {
 					log.Println("Error sending response:", err)
 				}
@@ -60,7 +72,7 @@ func (handler *ChatHandler) readWsMessage(ws *websocket.Conn) {
 			case "select_user":
 				senderUsername := data["username"].(string)
 				receiverUsername := data["receiver"].(string)
-
+				// todo: get user
 				if _, exists := srv.Clients[receiverUsername]; exists {
 					response := map[string]interface{}{
 						"action": "select_user",
@@ -89,12 +101,14 @@ func (handler *ChatHandler) readWsMessage(ws *websocket.Conn) {
 				}
 
 			case "message":
+				// todo: separate function
 				senderUsername := data["username"].(string)
 				receiverUsername := data["receiver"].(string)
 				content := data["message"].(string)
 
 				receiver, exists := srv.Clients[receiverUsername]
 				if exists {
+					//todo: use send function instead
 					err := receiver.Conn.WriteJSON(map[string]interface{}{
 						"action":  "message",
 						"from":    senderUsername,
