@@ -1,14 +1,17 @@
 package main
 
 import (
+	"app_chat/internal/chat/memory"
 	"app_chat/internal/chat/server"
 	"app_chat/internal/socket_server"
 	"github.com/gorilla/websocket"
 )
 
 func main() {
+	inMemory := memory.NewInMemory()
 	chatHandler := &server.ChatHandler{
-		Upgrade: websocket.Upgrader{},
+		Upgrade:  websocket.Upgrader{},
+		InMemory: inMemory,
 	}
 	chatServer := socket_server.Server{
 		Port:            8989,

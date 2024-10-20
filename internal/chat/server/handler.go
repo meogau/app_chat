@@ -11,7 +11,7 @@ import (
 
 type ChatHandler struct {
 	Upgrade  websocket.Upgrader
-	InMemory memory.InMemory
+	InMemory *memory.InMemory
 }
 
 func (handler *ChatHandler) HandleSocketConnection(ws *websocket.Conn, r *http.Request, _ int, _ int) error {
@@ -40,6 +40,7 @@ func (handler *ChatHandler) readWsMessage(user *socket.User) {
 	var message map[string]interface{}
 	for {
 		if err := user.Conn.ReadJSON(&message); err != nil {
+			// todo: handle user logout
 			log.Println("Error reading json:", err)
 			break
 		}
@@ -58,7 +59,7 @@ func (handler *ChatHandler) readWsMessage(user *socket.User) {
 
 func loginHandle(handler *ChatHandler, user *socket.User) {
 	handler.InMemory.AddUSer(user)
-	log.Printf("User %s logged in", user.Username)
+	log.Printf("User %s logged in\n", user.Username)
 	response := map[string]interface{}{
 		"action": "login",
 		"status": "success",

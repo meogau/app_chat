@@ -27,7 +27,7 @@ func (s *Server) Start() error {
 	r := mux.NewRouter()
 	r.HandleFunc("/healthcheck/_check", handleHealthCheck).Methods("GET")
 	r.PathPrefix("/").HandlerFunc(s.serveWebSocket)
-	fmt.Printf("Server %v start at port :%v", s.Name, s.Port)
+	fmt.Printf("Server %v start at port :%v\n", s.Name, s.Port)
 	credentials := handlers.AllowCredentials()
 	methods := handlers.AllowedMethods([]string{"POST", "PUT", "GET", "DELETE"})
 	origins := handlers.AllowedOrigins([]string{"*"})
@@ -59,7 +59,7 @@ func (s *Server) serveWebSocket(w http.ResponseWriter, r *http.Request) {
 		ReadBufferSize:  s.ReadBufferSize,
 		WriteBufferSize: s.WriteBufferSize,
 	}
-	fmt.Printf("Serve connection %+v", r)
+	// fmt.Printf("Serve connection %+v", r)
 	conn, err := upgrade.Upgrade(w, r, nil)
 	conn.SetReadLimit(int64(s.MaxMessageSize))
 	if err != nil {
